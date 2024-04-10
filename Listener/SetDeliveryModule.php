@@ -68,14 +68,15 @@ class SetDeliveryModule implements EventSubscriberInterface
 
     private function callWebServiceFindRelayPointByIdFromRequest(Request $request)
     {
+        $decodedContent = json_decode($request->getContent(), true);
         if ($request->get('colissimo_pickup_point_code')) {
             $relayInfos = explode(':', $request->get('colissimo_pickup_point_code'));
             $relayCode = $relayInfos[0];
             $relayType = count($relayInfos) > 1 ? $relayInfos[1] : null ;
             $relayCountryCode = count($relayInfos) > 2 ? $relayInfos[2] : null ;
-        } elseif ($request->get('pickupAddress')) {
+        } elseif ($request->get('pickupAddress') || ($decodedContent && $decodedContent['pickupAddress'])) {
             // The request sent by OpenApi is different
-            $relayInfos = $request->get('pickupAddress');
+            $relayInfos = $request->get('pickupAddress') ?? $decodedContent['pickupAddress'];
             $relayCode = $relayInfos['id'];
             $relayType = isset($relayInfos['additionalData']['pickupPointType']) ? $relayInfos['additionalData']['pickupPointType'] : null;
             $codeReseau = isset($relayInfos['additionalData']['pickupPointNetwork']) ? $relayInfos['additionalData']['pickupPointNetwork'] : null;
